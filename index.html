@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargador de Música y Video</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #02104e 0%, #067c7c 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .format-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .format-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .format-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .format-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .download-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .video-preview {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .video-preview h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .info-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #4b76a2);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .quality-selector {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .quality-selector label {
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, .3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .main-card {
+                padding: 25px;
+            }
+
+            .format-selector {
+                flex-direction: column;
+            }
+        }
+
+        .instructions {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-download"></i> Descargador de Música y Video</h1>
+            <p class="subtitle">Descarga tus contenidos favoritos de forma rápida y sencilla</p>
+            <p class="subtitle">⚠️ Necesitas iniciar el servidor backend para que funcione</p>
+        </header>
+
+        <div class="video-preview" id="videoPreview" style="display: none;">
+            <h2><i class="fas fa-play-circle"></i> Vista Previa del Video</h2>
+            <div class="video-container" id="videoContainer">
+                <!-- El video se cargará aquí -->
+            </div>
+            <div style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px;">
+                <strong id="videoTitle">Cargando información...</strong>
+            </div>
+        </div>
+
+        <div class="main-card">
+            <div class="input-group">
+                <label for="videoUrl"><i class="fas fa-link"></i> Pega el enlace del video o música:</label>
+                <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." />
+            </div>
+
+            <div class="input-group">
+                <label><i class="fas fa-file-alt"></i> Selecciona el formato:</label>
+                <div class="format-selector">
+                    <button class="format-btn active" data-format="audio">
+                        <i class="fas fa-music"></i> MP3 (Audio)
+                    </button>
+                    <button class="format-btn" data-format="video">
+                        <i class="fas fa-video"></i> MP4 (Video)
+                    </button>
+                </div>
+            </div>
+
+            <div class="quality-selector" id="qualitySelector">
+                <label><i class="fas fa-tachometer-alt"></i> Calidad del video:</label>
+                <select id="qualitySelect">
+                    <option value="720p">720p (HD)</option>
+                    <option value="1080p">1080p (Full HD)</option>
+                    <option value="480p">480p</option>
+                    <option value="360p">360p</option>
+                    <option value="240p">240p</option>
+                </select>
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+
+            <button class="download-btn" id="downloadBtn" onclick="startDownload()">
+                <i class="fas fa-download"></i> Descargar Ahora
+            </button>
+
+            <div id="result" class="result"></div>
+
+            <div class="info-box">
+                <h3><i class="fas fa-check-circle"></i> Plataformas soportadas:</h3>
+                <ul>
+                    <li><i class="fab fa-youtube" style="color: #ff0000;"></i> <strong>YouTube</strong> - Videos y música</li>
+                    <li><i class="fab fa-tiktok" style="color: #000000;"></i> <strong>TikTok</strong> - Videos cortos</li>
+                </ul>
+                <h3 style="margin-top: 15px; font-size: 0.9em; color: #999;"><i class="fas fa-info-circle"></i> Próximamente:</h3>
+                <ul style="font-size: 0.9em; opacity: 0.7;">
+                    <li>Instagram</li>
+                    <li>Facebook</li>
+                    <li>Vimeo</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2><i class="fas fa-server"></i> Configuración del Servidor Backend</h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>Instala Python y pip en tu computadora</div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>Instala las dependencias: <code>pip install flask pytube</code></div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>Guarda el archivo <code>server.py</code> en la misma carpeta</div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div>Ejecuta el servidor: <code>python server.py</code></div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div>Abre este archivo HTML en tu navegador</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFormat = 'audio';
+        let videoInfo = null;
+        let downloadInProgress = false;
+
+        // Manejo de selección de formato
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedFormat = this.getAttribute('data-format');
+
+                // Mostrar/ocultar selector de calidad
+                const qualitySelector = document.getElementById('qualitySelector');
+                qualitySelector.style.display = selectedFormat === 'video' ? 'block' : 'none';
+
+                // Si hay un video cargado, obtener calidades disponibles
+                if (videoInfo && selectedFormat === 'video') {
+                    fetchAvailableQualities(videoInfo.url);
+                }
+            });
+        });
+
+        async function startDownload() {
+            const urlInput = document.getElementById('videoUrl');
+            const url = urlInput.value.trim();
+            const resultDiv = document.getElementById('result');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            // Validación
+            if (!url) {
+                showResult('Por favor, ingresa un enlace válido', 'error');
+                return;
+            }
+
+            if (!isValidUrl(url)) {
+                showResult('El enlace ingresado no es válido', 'error');
+                return;
+            }
+
+            // Verificar que el backend esté funcionando
+            try {
+                const testResponse = await fetch('http://localhost:5000/health');
+                if (!testResponse.ok) {
+                    throw new Error('Backend no disponible');
+                }
+            } catch (error) {
+                showResult(
+                    '❌ El servidor backend no está funcionando. ' +
+                    'Por favor, ejecuta el archivo server.py primero. ' +
+                    'Revisa las instrucciones abajo.',
+                    'error'
+                );
+                return;
+            }
+
+            // Iniciar descarga
+            downloadInProgress = true;
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<div class="loading"></div> Procesando...';
+
+            showResult('⏳ Preparando descarga...', 'info');
+
+            // Mostrar progreso
+            const progressContainer = document.getElementById('progressContainer');
+            progressContainer.style.display = 'block';
+            updateProgress(0, 'Iniciando...');
+
+            try {
+                // Enviar solicitud al backend
+                const response = await fetch('http://localhost:5000/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        format: selectedFormat,
+                        quality: selectedFormat === 'video' ?
+                            document.getElementById('qualitySelect').value :
+                            null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Actualizar progreso
+                    updateProgress(100, 'Descarga completada!');
+
+                    // Mostrar mensaje de éxito
+                    showResult(
+                        `✅ ${data.message}<br>` +
+                        `<strong>Título:</strong> ${data.title}<br>` +
+                        `<strong>Formato:</strong> ${data.format.toUpperCase()}<br>` +
+                        `<strong>Tamaño:</strong> ${formatBytes(data.file_size)}`,
+                        'success'
+                    );
+
+                    // Crear enlace para descargar
+                    setTimeout(() => {
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = data.download_url;
+                        downloadLink.download = data.filename;
+                        downloadLink.click();
+
+                        showResult(
+                            '📥 Descarga iniciada automáticamente. ' +
+                            'Si no funciona, <a href="' + data.download_url + '" download>' +
+                            'haz clic aquí</a>.',
+                            'success'
+                        );
+                    }, 1000);
+
+                } else {
+                    throw new Error(data.error || 'Error en la descarga');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showResult(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Descargar Ahora';
+                downloadInProgress = false;
+
+                // Ocultar progreso después de 3 segundos
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function updateProgress(percent, message) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = `${percent}% - ${message}`;
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = `result ${type}`;
+            resultDiv.style.display = 'block';
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Detectar cuando se pega o escribe un URL
+        document.getElementById('videoUrl').addEventListener('input', async function (e) {
+            const url = e.target.value.trim();
+            if (url && isValidUrl(url)) {
+                loadVideoPreview(url);
+
+                // Obtener información del video
+                try {
+                    const response = await fetch('http://localhost:5000/info', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ url: url })
+                    });
+
+                    if (response.ok) {
+                        videoInfo = await response.json();
+                        if (selectedFormat === 'video' && videoInfo.qualities) {
+                            populateQualityOptions(videoInfo.qualities);
+                        }
+                    }
+                } catch (error) {
+                    console.log('No se pudo obtener información del video');
+                }
+            } else {
+                document.getElementById('videoPreview').style.display = 'none';
+                videoInfo = null;
+            }
+        });
+
+        // Permitir descargar con Enter
+        document.getElementById('videoUrl').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !downloadInProgress) {
+                startDownload();
+            }
+        });
+
+        function loadVideoPreview(url) {
+            const videoId = extractVideoId(url);
+            const platform = detectPlatform(url);
+            const videoPreview = document.getElementById('videoPreview');
+            const videoContainer = document.getElementById('videoContainer');
+            const videoTitle = document.getElementById('videoTitle');
+
+            if (videoId && platform === 'youtube') {
+                videoContainer.innerHTML = `
+                    <iframe 
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                `;
+                videoTitle.textContent = 'Video de YouTube - Cargando información...';
+                videoPreview.style.display = 'block';
+            } else {
+                videoPreview.style.display = 'none';
+            }
+        }
+
+        function populateQualityOptions(qualities) {
+            const select = document.getElementById('qualitySelect');
+            select.innerHTML = '';
+
+            // Ordenar calidades de mayor a menor
+            const sortedQualities = qualities.sort((a, b) => {
+                const heightA = parseInt(a.replace('p', ''));
+                const heightB = parseInt(b.replace('p', ''));
+                return heightB - heightA;
+            });
+
+            sortedQualities.forEach(quality => {
+                const option = document.createElement('option');
+                option.value = quality;
+                option.textContent = `${quality} (${getQualityLabel(quality)})`;
+                select.appendChild(option);
+            });
+        }
+
+        function getQualityLabel(quality) {
+            const labels = {
+                '144p': 'Muy baja',
+                '240p': 'Baja',
+                '360p': 'Media',
+                '480p': 'DVD',
+                '720p': 'HD',
+                '1080p': 'Full HD',
+                '1440p': '2K',
+                '2160p': '4K'
+            };
+            return labels[quality] || 'Desconocida';
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function extractVideoId(url) {
+            // YouTube
+            const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(youtubeRegex);
+            return match ? match[1] : null;
+        }
+
+        function detectPlatform(url) {
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                return 'youtube';
+            } else if (url.includes('vimeo.com')) {
+                return 'vimeo';
+            } else if (url.includes('facebook.com') || url.includes('fb.watch')) {
+                return 'facebook';
+            } else if (url.includes('tiktok.com')) {
+                return 'tiktok';
+            } else if (url.includes('instagram.com')) {
+                return 'instagram';
+            }
+            return 'unknown';
+        }
+
+        // Verificar conexión con el backend al cargar la página
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('http://localhost:5000/health');
+                if (response.ok) {
+                    console.log('✅ Backend conectado');
+                }
+            } catch (error) {
+                console.log('⚠️ Backend no disponible. Ejecuta server.py primero.');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+# Entorno virtual
+.venv/
+venv/
+env/
+ENV/
+
+# Archivos de descarga
+downloads/
+descargas audio/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Cookies y archivos sensibles
+cookies.txt
+*.cookies
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de desarrollo
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# FFmpeg (demasiado grande)
+ffmpeg-*
+
+# Logs
+*.log
+
+# Archivos temporales
+.ej_components/
+cache/
+*.tmp

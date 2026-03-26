@@ -1,0 +1,4 @@
+Flask==2.3.3
+yt-dlp>=2025.01.18
+flask-cors==4.0.0
+browser-cookie3>=0.6.4
