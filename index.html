@@ -157,6 +157,8 @@
             position: relative;
             padding-bottom: 56.25%;
             height: 0;
+            color: #c3e6cb;
+            text-align: center;
             overflow: hidden;
             border-radius: 10px;
             background: #000;
@@ -235,7 +237,7 @@
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea, #4b76a2);
-            border-radius: 10px;
+            border-radius: 0px;
             width: 0%;
             transition: width 0.3s ease;
         }
@@ -244,6 +246,7 @@
             text-align: center;
             font-weight: 600;
             color: #555;
+
         }
 
         .quality-selector {
@@ -341,7 +344,7 @@
             <p class="subtitle">⚠️ Necesitas iniciar el servidor backend para que funcione</p>
         </header>
 
-        <div class="video-preview" id="videoPreview" style="display: none;">
+        <div class="video-preview" id="videoPreview" style="display: block;">
             <h2><i class="fas fa-play-circle"></i> Vista Previa del Video</h2>
             <div class="video-container" id="videoContainer">
                 <!-- El video se cargará aquí -->
@@ -355,6 +358,18 @@
             <div class="input-group">
                 <label for="videoUrl"><i class="fas fa-link"></i> Pega el enlace del video o música:</label>
                 <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." />
+            </div>
+
+            <div class="input-group">
+                <label><i class="fas fa-file-alt"></i> Tipo de descarga:</label>
+                <div class="format-selector">
+                    <button class="format-btn active" data-type="individual">
+                        <i class="fas fa-file"></i> Individual
+                    </button>
+                    <button class="format-btn" data-type="playlist">
+                        <i class="fas fa-list"></i> Playlist
+                    </button>
+                </div>
             </div>
 
             <div class="input-group">
@@ -392,6 +407,11 @@
             </button>
 
             <div id="result" class="result"></div>
+
+            <div id="playlistResults" class="result" style="display: none;">
+                <h3>Archivos descargados de la playlist:</h3>
+                <div id="filesList" style="margin-top: 15px;"></div>
+            </div>
 
             <div class="info-box">
                 <h3><i class="fas fa-check-circle"></i> Plataformas soportadas:</h3>
@@ -435,18 +455,34 @@
                 <div class="step-number">5</div>
                 <div>Abre este archivo HTML en tu navegador</div>
             </div>
+            <button onclick="limpiarServidor()"
+                style="margin-top: 20px; background-color: #ff4444; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px;">
+                🗑️ Limpiar Servidor
+            </button>
         </div>
     </div>
 
     <script>
         let selectedFormat = 'audio';
+        let selectedType = 'individual';
         let videoInfo = null;
         let downloadInProgress = false;
 
-        // Manejo de selección de formato
-        document.querySelectorAll('.format-btn').forEach(btn => {
+        // Manejo de selección de tipo (individual o playlist)
+        document.querySelectorAll('[data-type]').forEach(btn => {
             btn.addEventListener('click', function () {
-                document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+                const typeButtons = document.querySelectorAll('[data-type]');
+                typeButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedType = this.getAttribute('data-type');
+            });
+        });
+
+        // Manejo de selección de formato
+        document.querySelectorAll('[data-format]').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const formatButtons = document.querySelectorAll('[data-format]');
+                formatButtons.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 selectedFormat = this.getAttribute('data-format');
 
@@ -486,7 +522,7 @@
                 }
             } catch (error) {
                 showResult(
-                    '❌ El servidor backend no está funcionando. ' +
+                    'El servidor backend no está funcionando. ' +
                     'Por favor, ejecuta el archivo server.py primero. ' +
                     'Revisa las instrucciones abajo.',
                     'error'
@@ -499,16 +535,21 @@
             downloadBtn.disabled = true;
             downloadBtn.innerHTML = '<div class="loading"></div> Procesando...';
 
-            showResult('⏳ Preparando descarga...', 'info');
+            showResult('Preparando descarga...', 'info');
+
+            // Ocultar resultados previos de playlist
+            document.getElementById('playlistResults').style.display = 'none';
 
             // Mostrar progreso
             const progressContainer = document.getElementById('progressContainer');
             progressContainer.style.display = 'block';
-            updateProgress(0, 'Iniciando...');
-
+            updateProgress(25, selectedType === 'playlist' ? 'Descargando playlist...' : 'Obteniendo información...');
             try {
+                // Seleccionar endpoint según el tipo de descarga
+                const endpoint = selectedType === 'playlist' ? 'http://localhost:5000/download-playlist' : 'http://localhost:5000/download';
+                
                 // Enviar solicitud al backend
-                const response = await fetch('http://localhost:5000/download', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -524,40 +565,28 @@
 
                 const data = await response.json();
 
-                if (data.success) {
-                    // Actualizar progreso
-                    updateProgress(100, 'Descarga completada!');
+                if (data.success || (data.success !== false && selectedType === 'playlist')) {
+                    updateProgress(100, selectedType === 'playlist' ? 'Playlist descargada!' : 'Descarga completada!');
 
-                    // Mostrar mensaje de éxito
-                    showResult(
-                        `✅ ${data.message}<br>` +
-                        `<strong>Título:</strong> ${data.title}<br>` +
-                        `<strong>Formato:</strong> ${data.format.toUpperCase()}<br>` +
-                        `<strong>Tamaño:</strong> ${formatBytes(data.file_size)}`,
-                        'success'
-                    );
-
-                    // Crear enlace para descargar
-                    setTimeout(() => {
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = data.download_url;
-                        downloadLink.download = data.filename;
-                        downloadLink.click();
-
+                    if (selectedType === 'playlist') {
+                        // Mostrar resultados de playlist
+                        displayPlaylistResults(data);
+                    } else {
+                        // Mostrar mensaje de éxito para descarga individual
                         showResult(
-                            '📥 Descarga iniciada automáticamente. ' +
-                            'Si no funciona, <a href="' + data.download_url + '" download>' +
-                            'haz clic aquí</a>.',
+                            'Descarga completada<br>' +
+                            '<strong>Título:</strong> ' + data.title + '<br>' +
+                            '<strong>Formato:</strong> ' + data.format.toUpperCase() + '<br>' +
+                            '<strong>Tamaño:</strong> ' + formatBytes(data.file_size),
                             'success'
                         );
-                    }, 1000);
-
+                    }
                 } else {
                     throw new Error(data.error || 'Error en la descarga');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showResult(`❌ Error: ${error.message}`, 'error');
+                showResult('Error: ' + error.message, 'error');
             } finally {
                 downloadBtn.disabled = false;
                 downloadBtn.innerHTML = '<i class="fas fa-download"></i> Descargar Ahora';
@@ -568,6 +597,39 @@
                     progressContainer.style.display = 'none';
                 }, 3000);
             }
+        }
+
+        function displayPlaylistResults(data) {
+            const playlistResultsDiv = document.getElementById('playlistResults');
+            const filesList = document.getElementById('filesList');
+            
+            playlistResultsDiv.style.display = 'block';
+            
+            // Limpiar lista anterior
+            filesList.innerHTML = '';
+            
+            // Crear tabla con los archivos
+            let html = '<p><strong>Total de archivos:</strong> ' + data.total_files + '</p>';
+            html += '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">';
+            html += '<thead><tr style="background: #f0f0f0; border-bottom: 2px solid #667eea;">';
+            html += '<th style="padding: 10px; text-align: left;">Título</th>';
+            html += '<th style="padding: 10px; text-align: center;">Tamaño</th>';
+            html += '<th style="padding: 10px; text-align: center;">Descargar</th>';
+            html += '</tr></thead><tbody>';
+            
+            data.files.forEach(file => {
+                html += '<tr style="border-bottom: 1px solid #e0e0e0;">';
+                html += '<td style="padding: 10px;">' + file.title + '</td>';
+                html += '<td style="padding: 10px; text-align: center;">' + formatBytes(file.file_size) + '</td>';
+                html += '<td style="padding: 10px; text-align: center;">';
+                html += '<a href="' + file.download_url + '" download style="background: #667eea; color: white; padding: 5px 15px; border-radius: 5px; text-decoration: none; display: inline-block;">';
+                html += '<i class="fas fa-download"></i> Descargar</a>';
+                html += '</td></tr>';
+            });
+            
+            html += '</tbody></table>';
+            
+            filesList.innerHTML = html;
         }
 
         function updateProgress(percent, message) {
@@ -612,10 +674,20 @@
 
                     if (response.ok) {
                         videoInfo = await response.json();
+                        // -------------------------------------------------------------------------------------
+                         if (videoInfo.success !== false) {
+                            const videoTitle = document.getElementById('videoTitle');
+                            const author = videoInfo.author ? ` - ${videoInfo.author}` : '';
+                            videoTitle.textContent = videoInfo.title
+                                ? `${videoInfo.title}${author}`
+                                : 'Información del video no disponible';
+                        }
+                        // ----------------------------------------------------------------------------------
                         if (selectedFormat === 'video' && videoInfo.qualities) {
                             populateQualityOptions(videoInfo.qualities);
                         }
                     }
+                    
                 } catch (error) {
                     console.log('No se pudo obtener información del video');
                 }
@@ -717,6 +789,36 @@
             }
             return 'unknown';
         }
+
+        // Función para limpiar la caché desde el navegador
+        function limpiarServidor() {
+            const token = "1234"; // Debe coincidir con ADMIN_TOKEN en Python
+            const url = `http://localhost:5000/admin/clear-cache?token=${token}`;
+            if (confirm("¿Estás seguro de que quieres borrar todos los archivos del servidor?")) {
+                fetch(url)
+                    .then(response => {
+                        // Parsear JSON incluso si hay error HTTP
+                        return response.json().then(data => {
+                            return {ok: response.ok, status: response.status, data: data};
+                        });
+                    })
+                    .then(result => {
+                        const data = result.data;
+                        if (data.status === "success") {
+                            alert("✅ " + data.message);
+                            console.log('Servidor limpiado:', data);
+                        } else {
+                            alert("❌ Error: " + (data.message || 'Error desconocido'));
+                            console.log('Error:', data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error en fetch:', error);
+                        alert("❌ No se pudo conectar con el servidor. Asegúrate de que server.py está ejecutándose en http://localhost:5000");
+                    });
+            }
+        }
+
 
         // Verificar conexión con el backend al cargar la página
         window.addEventListener('load', async () => {

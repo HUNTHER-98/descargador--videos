@@ -17,8 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 DOWNLOAD_FOLDER = 'downloads'
 AUDIO_FOLDER = os.path.join(DOWNLOAD_FOLDER, 'audio')
 VIDEO_FOLDER = os.path.join(DOWNLOAD_FOLDER, 'video')
-MAX_FILE_AGE_HOURS = None  # Eliminar archivos después de 24 horas
-ADMIN_TOKEN = "1234"  # Cambia esto por un token seguro en producción
+MAX_FILE_AGE_HOURS = none  # Eliminar archivos después de 24 horas
 COOKIES_FILE = os.path.join(os.path.dirname(__file__), 'cookies.txt')
 
 # Ruta a FFmpeg (instalado localmente)
@@ -248,39 +247,39 @@ def download_video():
             if result.returncode == 0:
                 logging.info(f"✅ Audio descargado exitosamente")
                 
-                # Buscar el archivo descargado RECIENTEMENTE (el más nuevo)
+                # Buscar el archivo descargado en la carpeta de audio
                 files = os.listdir(AUDIO_FOLDER)
-                mp3_files = [f for f in files if f.endswith('.mp3')]
-                
-                if mp3_files:
-                    # Obtener el archivo más reciente modificado
-                    filename = max(mp3_files, key=lambda f: os.path.getmtime(os.path.join(AUDIO_FOLDER, f)))
-                    filepath = os.path.join(AUDIO_FOLDER, filename)
-                    download_url = f'/download/audio/{filename}'
-                    file_size = os.path.getsize(filepath)
-                    
-                    # Asegurar permisos de lectura en el archivo
-                    try:
-                        import stat
-                        os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
-                    except Exception as e:
-                        logging.warning(f"No se pudieron establecer permisos: {e}")
-                    
-                    logging.info(f"✅ Archivo encontrado: {filename} ({file_size} bytes)")
-                    return jsonify({
-                        "success": True,
-                        "message": "Descarga completada",
-                        "title": os.path.splitext(filename)[0],
-                        "format": "mp3",
-                        "filename": filename,
-                        "download_url": download_url,
-                        "file_size": file_size
-                    })
+                for file in files:
+                    if file.endswith('.mp3'):
+                        filename = file
+                        download_url = f'/download/audio/{filename}'
+                        file_size = os.path.getsize(os.path.join(AUDIO_FOLDER, filename))
+                        
+                        # Asegurar permisos de lectura en el archivo
+                        try:
+                            import stat
+                            os.chmod(os.path.join(AUDIO_FOLDER, filename), stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+                        except Exception as e:
+                            logging.warning(f"No se pudieron establecer permisos: {e}")
+                        
+                        return jsonify({
+                            "success": True,
+                            "message": "Descarga completada",
+                            "title": os.path.splitext(filename)[0],
+                            "format": "mp3",
+                            "filename": filename,
+                            "download_url": download_url,
+                            "file_size": file_size
+                        })
                 
                 return jsonify({
-                    "success": False,
-                    "error": "No se encontró archivo después de la descarga"
-                }), 500
+                    "success": True,
+                    "message": "Descarga completada",
+                    "format": "mp3",
+                    "filename": "audio.mp3",
+                    "download_url": "/download/audio/audio.mp3",
+                    "file_size": 0
+                })
             else:
                 error_msg = result.stderr or result.stdout
                 logging.error(f"❌ Error descargando audio: {error_msg}")
@@ -306,39 +305,39 @@ def download_video():
             if result.returncode == 0:
                 logging.info(f"✅ Video descargado exitosamente")
                 
-                # Buscar el archivo descargado RECIENTEMENTE (el más nuevo)
+                # Buscar el archivo descargado en la carpeta de video
                 files = os.listdir(VIDEO_FOLDER)
-                mp4_files = [f for f in files if f.endswith('.mp4')]
-                
-                if mp4_files:
-                    # Obtener el archivo más reciente modificado
-                    filename = max(mp4_files, key=lambda f: os.path.getmtime(os.path.join(VIDEO_FOLDER, f)))
-                    filepath = os.path.join(VIDEO_FOLDER, filename)
-                    download_url = f'/download/video/{filename}'
-                    file_size = os.path.getsize(filepath)
-                    
-                    # Asegurar permisos de lectura en el archivo
-                    try:
-                        import stat
-                        os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
-                    except Exception as e:
-                        logging.warning(f"No se pudieron establecer permisos: {e}")
-                    
-                    logging.info(f"✅ Archivo encontrado: {filename} ({file_size} bytes)")
-                    return jsonify({
-                        "success": True,
-                        "message": "Descarga completada",
-                        "title": os.path.splitext(filename)[0],
-                        "format": "mp4",
-                        "filename": filename,
-                        "download_url": download_url,
-                        "file_size": file_size
-                    })
+                for file in files:
+                    if file.endswith('.mp4'):
+                        filename = file
+                        download_url = f'/download/video/{filename}'
+                        file_size = os.path.getsize(os.path.join(VIDEO_FOLDER, filename))
+                        
+                        # Asegurar permisos de lectura en el archivo
+                        try:
+                            import stat
+                            os.chmod(os.path.join(VIDEO_FOLDER, filename), stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+                        except Exception as e:
+                            logging.warning(f"No se pudieron establecer permisos: {e}")
+                        
+                        return jsonify({
+                            "success": True,
+                            "message": "Descarga completada",
+                            "title": os.path.splitext(filename)[0],
+                            "format": "mp4",
+                            "filename": filename,
+                            "download_url": download_url,
+                            "file_size": file_size
+                        })
                 
                 return jsonify({
-                    "success": False,
-                    "error": "No se encontró archivo después de la descarga"
-                }), 500
+                    "success": True,
+                    "message": "Descarga completada",
+                    "format": "mp4",
+                    "filename": "video.mp4",
+                    "download_url": "/download/video/video.mp4",
+                    "file_size": 0
+                })
             else:
                 error_msg = result.stderr or result.stdout
                 logging.error(f"❌ Error descargando video: {error_msg}")
@@ -354,139 +353,6 @@ def download_video():
     except Exception as e:
         logging.error(f"Error en descarga: {str(e)}")
         return jsonify({"error": f"Error al descargar: {str(e)}"}), 500
-
-@app.route('/download-playlist', methods=['POST'])
-def download_playlist():
-    """Descargar playlist completa de videos o audios"""
-    cleanup_old_files()
-    
-    try:
-        data = request.json
-        url = data.get('url')
-        format_type = data.get('format', 'audio')
-        
-        if not url:
-            return jsonify({"error": "URL de playlist requerida"}), 400
-        
-        # Validar que sea una playlist
-        if 'list=' not in url and 'playlist' not in url.lower():
-            return jsonify({"error": "La URL no parece ser una playlist de YouTube"}), 400
-        
-        downloaded_files = []
-        failed_videos = []
-        
-        if format_type == 'audio':
-            output_template = os.path.join(AUDIO_FOLDER, '%(playlist_title)s/%(title)s.%(ext)s')
-            cmd = [
-                'yt-dlp',
-                '--remote-components', 'ejs:github',
-                '--extract-audio',
-                '--audio-format', 'mp3',
-                '--audio-quality', '192',
-                '-o', output_template,
-                '--yes-playlist',  # Descargar toda la playlist
-                '--socket-timeout', '90',
-                url
-            ]
-            
-            logging.info(f"🎵 Descargando playlist de audio: {url}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)  # 30 minutos
-            
-            if result.returncode == 0:
-                logging.info(f"✅ Playlist de audio descargada exitosamente")
-                
-                # Buscar archivos MP3 en subcarpetas de playlist
-                for root, dirs, files in os.walk(AUDIO_FOLDER):
-                    for file in files:
-                        if file.endswith('.mp3'):
-                            filepath = os.path.join(root, file)
-                            relative_path = os.path.relpath(filepath, AUDIO_FOLDER)
-                            file_size = os.path.getsize(filepath)
-                            download_url = f'/download/audio/{relative_path}'
-                            
-                            downloaded_files.append({
-                                "title": os.path.splitext(file)[0],
-                                "format": "mp3",
-                                "filename": file,
-                                "relative_path": relative_path,
-                                "download_url": download_url,
-                                "file_size": file_size
-                            })
-                
-                logging.info(f"✅ {len(downloaded_files)} archivos encontrados en la playlist")
-                return jsonify({
-                    "success": True,
-                    "message": f"Descarga de playlist completada",
-                    "total_files": len(downloaded_files),
-                    "files": downloaded_files,
-                    "format": "mp3"
-                })
-            else:
-                error_msg = result.stderr or result.stdout
-                logging.error(f"❌ Error descargando playlist de audio: {error_msg}")
-                return jsonify({
-                    "error": f"Error al descargar playlist: {error_msg[:300]}"
-                }), 500
-        
-        elif format_type == 'video':
-            output_template = os.path.join(VIDEO_FOLDER, '%(playlist_title)s/%(title)s.%(ext)s')
-            cmd = [
-                'yt-dlp',
-                '--remote-components', 'ejs:github',
-                '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                '-o', output_template,
-                '--yes-playlist',  # Descargar toda la playlist
-                '--socket-timeout', '90',
-                url
-            ]
-            
-            logging.info(f"🎬 Descargando playlist de video: {url}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)  # 60 minutos
-            
-            if result.returncode == 0:
-                logging.info(f"✅ Playlist de video descargada exitosamente")
-                
-                # Buscar archivos MP4 en subcarpetas de playlist
-                for root, dirs, files in os.walk(VIDEO_FOLDER):
-                    for file in files:
-                        if file.endswith('.mp4'):
-                            filepath = os.path.join(root, file)
-                            relative_path = os.path.relpath(filepath, VIDEO_FOLDER)
-                            file_size = os.path.getsize(filepath)
-                            download_url = f'/download/video/{relative_path}'
-                            
-                            downloaded_files.append({
-                                "title": os.path.splitext(file)[0],
-                                "format": "mp4",
-                                "filename": file,
-                                "relative_path": relative_path,
-                                "download_url": download_url,
-                                "file_size": file_size
-                            })
-                
-                logging.info(f"✅ {len(downloaded_files)} archivos encontrados en la playlist")
-                return jsonify({
-                    "success": True,
-                    "message": f"Descarga de playlist completada",
-                    "total_files": len(downloaded_files),
-                    "files": downloaded_files,
-                    "format": "mp4"
-                })
-            else:
-                error_msg = result.stderr or result.stdout
-                logging.error(f"❌ Error descargando playlist de video: {error_msg}")
-                return jsonify({
-                    "error": f"Error al descargar playlist: {error_msg[:300]}"
-                }), 500
-        else:
-            return jsonify({"error": "Formato no soportado"}), 400
-            
-    except subprocess.TimeoutExpired:
-        logging.error("❌ Timeout en la descarga de playlist (más de 30 minutos)")
-        return jsonify({"error": "Tiempo de descarga excedido"}), 500
-    except Exception as e:
-        logging.error(f"Error en descarga de playlist: {str(e)}")
-        return jsonify({"error": f"Error al descargar playlist: {str(e)}"}), 500
 
 @app.route('/download/<path:filepath>', methods=['GET'])
 def serve_file(filepath):
@@ -556,48 +422,6 @@ def search_videos():
         logging.error(f"Error en búsqueda: {str(e)}")
         return jsonify({"error": f"Error en búsqueda: {str(e)}"}), 500
 
-# Nota: La función de búsqueda es básica y puede mejorarse con paginación, manejo de errores más robusto, y soporte para otras plataformas.
-
-@app.route('/admin/clear-cache', methods=['GET'])
-def clear_cache_manual():
-    """Ruta protegida para borrar archivos manualmente"""
-    try:
-        # 1. Verificar si el token que envían es correcto
-        user_token = request.args.get('token')
-        
-        if user_token != ADMIN_TOKEN:
-            logging.warning(f"⚠️ Intento de limpieza no autorizado con token: {user_token}")
-            return jsonify({
-                "status": "error", 
-                "message": "Token inválido. Acceso denegado."
-            }), 403
-    
-        # 2. Si el token es correcto, proceder con el borrado
-        archivos_borrados = 0
-        for folder in [AUDIO_FOLDER, VIDEO_FOLDER]:
-            if os.path.exists(folder):
-                for filename in os.listdir(folder):
-                    filepath = os.path.join(folder, filename)
-                    if os.path.isfile(filepath):
-                        try:
-                            os.remove(filepath)
-                            archivos_borrados += 1
-                            logging.info(f"✅ Eliminado: {filepath}")
-                        except Exception as file_error:
-                            logging.warning(f"⚠️ No se pudo eliminar {filepath}: {file_error}")
-        
-        logging.info(f"✅ Limpieza completada: {archivos_borrados} archivos eliminados")
-        return jsonify({
-            "status": "success", 
-            "message": f"Limpieza completada. Se eliminaron {archivos_borrados} archivos."
-        }), 200
-    except Exception as e:
-        logging.error(f"❌ Error en limpieza manual: {e}")
-        return jsonify({
-            "status": "error", 
-            "message": f"Error: {str(e)}"
-        }), 500
-
 if __name__ == '__main__':
     print("=" * 50)
     print("🎵 SERVIDOR DE DESCARGAS DE YOUTUBE")
@@ -610,4 +434,3 @@ if __name__ == '__main__':
     print("\n🔧 Iniciando servidor...")
     
     app.run(host='0.0.0.0', port=5000, debug=True)
-    

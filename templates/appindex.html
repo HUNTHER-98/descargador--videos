@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargador Multiplataforma v2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .version {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: 2px solid white;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        input[type="text"],
+        input[type="search"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="search"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button, .btn {
+            padding: 12px 24px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover, .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .platform-card {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .platform-card:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-5px);
+        }
+
+        .platform-card.selected {
+            border-color: #667eea;
+            background: #e8eef7;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .platform-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .platform-name {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .video-list {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .video-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .video-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .video-thumbnail {
+            width: 120px;
+            height: 90px;
+            border-radius: 5px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .video-info {
+            flex: 1;
+        }
+
+        .video-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .video-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .small-btn {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .result-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .result-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .result-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .result-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .platform-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-item {
+                flex-direction: column;
+            }
+            
+            .video-thumbnail {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📥 Descargador Multiplataforma</h1>
+            <div class="version">v2.0 - Escalada Profesional</div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('quick-download')">
+                <i class="fas fa-bolt"></i> Descarga Rápida
+            </button>
+            <button class="tab-btn" onclick="switchTab('platform-explorer')">
+                <i class="fas fa-compass"></i> Explorar Plataformas
+            </button>
+        </div>
+
+        <!-- Tab 1: Descarga Rápida -->
+        <div id="quick-download" class="tab-content active">
+            <div class="card">
+                <h2><i class="fas fa-bolt"></i> Descarga Rápida</h2>
+                <p style="color: #666; margin-bottom: 20px;">Pega una URL y descarga directamente</p>
+                
+                <div id="quick-message" class="result-message"></div>
+
+                <div class="input-group">
+                    <label>URL del Video</label>
+                    <input type="text" id="quick-url" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+
+                <div class="input-group">
+                    <label>Formato</label>
+                    <select id="quick-format">
+                        <option value="audio">🎵 Audio (MP3)</option>
+                        <option value="video">🎬 Video (MP4)</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button onclick="quickDownload()">
+                        <i class="fas fa-download"></i> Descargar Ahora
+                    </button>
+                </div>
+
+                <div id="quick-progress" style="display:none;">
+                    <p style="margin-top: 15px; color: #666;">Descargando...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="quick-progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Explorar Plataformas -->
+        <div id="platform-explorer" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-compass"></i> Explorar Plataformas</h2>
+
+                <div class="input-group">
+                    <label>Selecciona una plataforma:</label>
+                    <div class="platform-grid" id="platform-grid"></div>
+                </div>
+
+                <div id="platform-search" style="display: none;">
+                    <div class="input-group">
+                        <label>Buscar videos en <span id="platform-name"></span></label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="search" id="search-query" placeholder="Escribe lo que quieres buscar...">
+                            <button onclick="searchVideos()" class="small-btn">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="platform-message" class="result-message"></div>
+
+                    <div id="video-results" class="video-list"></div>
+
+                    <div id="platform-progress" style="display:none; text-align: center; margin-top: 20px;">
+                        <div class="loading"></div>
+                        <p style="margin-top: 10px; color: #666;">Buscando videos...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Descargador Multiplataforma v2.0 | <i class="fas fa-heart"></i> Creado con dedicación</p>
+        </footer>
+    </div>
+
+    <script>
+        let selectedPlatform = null;
+        const PLATFORMS = [
+            { id: 'youtube', name: 'YouTube', icon: '📺' },
+            { id: 'tiktok', name: 'TikTok', icon: '🎵' },
+            { id: 'instagram', name: 'Instagram', icon: '📸', disabled: true },
+            { id: 'facebook', name: 'Facebook', icon: '👥', disabled: true }
+        ];
+
+        // Inicialización
+        function init() {
+            loadPlatforms();
+            checkHealth();
+        }
+
+        function checkHealth() {
+            fetch('/api/health')
+                .then(r => r.json())
+                .then(data => console.log('✅ Backend activo:', data))
+                .catch(e => console.error('❌ Backend no disponible:', e));
+        }
+
+        function loadPlatforms() {
+            const grid = document.getElementById('platform-grid');
+            grid.innerHTML = '';
+            
+            PLATFORMS.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'platform-card' + (p.disabled ? ' disabled' : '');
+                card.style.opacity = p.disabled ? '0.5' : '1';
+                card.style.cursor = p.disabled ? 'not-allowed' : 'pointer';
+                card.innerHTML = `
+                    <div class="platform-icon">${p.icon}</div>
+                    <div class="platform-name">${p.name}</div>
+                    ${p.disabled ? '<div style="font-size: 0.8em; color: #999; margin-top: 5px;">Próximamente</div>' : ''}
+                `;
+                
+                if (!p.disabled) {
+                    card.onclick = () => selectPlatform(p.id, p.name);
+                }
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function selectPlatform(platformId, platformName) {
+            selectedPlatform = platformId;
+            
+            // Actualizar UI
+            document.querySelectorAll('.platform-card').forEach(c => c.classList.remove('selected'));
+            event.target.closest('.platform-card').classList.add('selected');
+            
+            // Mostrar búsqueda
+            document.getElementById('platform-search').style.display = 'block';
+            document.getElementById('platform-name').textContent = platformName;
+            document.getElementById('search-query').focus();
+        }
+
+        function switchTab(tabName) {
+            // Ocultar todos
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            // Mostrar seleccionado
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function quickDownload() {
+            const url = document.getElementById('quick-url').value;
+            const format = document.getElementById('quick-format').value;
+            const msgEl = document.getElementById('quick-message');
+            const btn = event.target;
+
+            if (!url) {
+                showMessage(msgEl, '❌ Por favor ingresa una URL', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading"></div> Descargando...';
+            document.getElementById('quick-progress').style.display = 'block';
+
+            try {
+                const endpoint = format === 'audio' ? '/api/download/audio' : '/api/download/video';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(msgEl, `✅ ${data.message}. Descargando archivo...`, 'success');
+                    
+                    // Descargar automáticamente
+                    setTimeout(() => {
+                        window.location.href = data.download_url;
+                    }, 1000);
+                } else {
+                    showMessage(msgEl, `❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(msgEl, `❌ Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-download"></i> Descargar Ahora';
+                document.getElementById('quick-progress').style.display = 'none';
+            }
+        }
+
+        async function searchVideos() {
+            if (!selectedPlatform) {
+                alert('Selecciona una plataforma primero');
+                return;
+            }
+
+            const query = document.getElementById('search-query').value;
+            const msgEl = document.getElementById('platform-message');
+            const resultsEl = document.getElementById('video-results');
+            const progressEl = document.getElementById('platform-progress');
+
+            if (!query) {
+                showMessage(msgEl, '❌ Escribe algo para buscar', 'error');
+                return;
+            }
+
+            progressEl.style.display = 'block';
+            resultsEl.innerHTML = '';
+            msgEl.className = 'result-message';
+
+            try {
+                const response = await fetch('/api/info/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query,
+                        platform: selectedPlatform,
+                        limit: 10
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.results && data.results.length > 0) {
+                    showMessage(msgEl, `✅ Se encontraron ${data.count} resultados en ${selectedPlatform.toUpperCase()}`, 'success');
+                    
+                    resultsEl.innerHTML = data.results.map((v, idx) => {
+                        // Escapar URL correctamente
+                        const videoUrl = v.url || '';
+                        const safeUrl = videoUrl.replace(/'/g, "\\'");
+                        
+                        return `
+                            <div class="video-item">
+                                <img src="${escapeHtml(v.thumbnail || 'https://via.placeholder.com/120x90')}" 
+                                     class="video-thumbnail" 
+                                     alt="${escapeHtml(v.title)}"
+                                     onerror="this.src='https://via.placeholder.com/120x90'">
+                                <div class="video-info">
+                                    <div class="video-title">${escapeHtml(v.title)}</div>
+                                    <div class="video-meta">
+                                        <i class="fas fa-user"></i> ${escapeHtml(v.uploader)} | 
+                                        <i class="fas fa-clock"></i> ${formatDuration(v.duration)}
+                                    </div>
+                                    <div class="video-actions">
+                                        <button class="small-btn" onclick="downloadFromSearch('${safeUrl}', 'audio')">
+                                            <i class="fas fa-music"></i> MP3
+                                        </button>
+                                        <button class="small-btn" onclick="downloadFromSearch('${safeUrl}', 'video')">
+                                            <i class="fas fa-video"></i> MP4
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    showMessage(msgEl, '❌ No se encontraron resultados. Intenta otra búsqueda.', 'error');
+                }
+            } catch (error) {
+                console.error('Error en búsqueda:', error);
+                showMessage(msgEl, `❌ Error: ${error.message}`, 'error');
+            } finally {
+                progressEl.style.display = 'none';
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function downloadFromSearch(url, format) {
+            document.getElementById('quick-url').value = url;
+            document.getElementById('quick-format').value = format;
+            switchTab('quick-download');
+            setTimeout(() => quickDownload(), 100);
+        }
+
+        function showMessage(el, text, type) {
+            el.className = `result-message ${type}`;
+            el.textContent = text;
+        }
+
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Iniciar cuando carga la página
+        window.onload = init;
+    </script>
+</body>
+</html>
